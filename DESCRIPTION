@@ -1,0 +1,26 @@
+Package: STBenchiGraphs
+Type: Package
+Title: An analysis library for ST_Benchi 
+Version: 0.1.0
+Authors@R: 
+    person("Gereon", "Dusella", , "science@gereondusella.de", role = c("aut", "cre"),
+           comment = c(ORCID = "0009-0008-9363-3072"))
+Description: The ST_Benchi framework produces a results database. You can take this
+    database and pass it to this package to explore the results and  create quick visualizations. 
+License: `use_mpl_license()`
+Imports:
+    dplyr,
+    readr,
+    stringr,
+    tidyr,
+    ggplot2,
+    lubridate,
+    rlang,
+    DBI,
+    purrr,
+    ggpattern,
+    stringi,
+    scales,
+    tools
+Encoding: UTF-8
+LazyData: true
