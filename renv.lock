@@ -85,6 +85,17 @@
         "bit"
       ]
     },
+    "blob": {
+      "Package": "blob",
+      "Version": "1.2.4",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "40415719b5a479b87949f3aa0aee737c",
+      "Requirements": [
+        "rlang",
+        "vctrs"
+      ]
+    },
     "cachem": {
       "Package": "cachem",
       "Version": "1.0.8",
@@ -158,6 +169,31 @@
       "Hash": "e8a1e41acf02548751f45c718d55aa6a",
       "Requirements": []
     },
+    "dbplyr": {
+      "Package": "dbplyr",
+      "Version": "2.3.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "63534894354af6b2587b7aa518a5193a",
+      "Requirements": [
+        "DBI",
+        "R6",
+        "blob",
+        "cli",
+        "dplyr",
+        "glue",
+        "lifecycle",
+        "magrittr",
+        "pillar",
+        "purrr",
+        "rlang",
+        "tibble",
+        "tidyr",
+        "tidyselect",
+        "vctrs",
+        "withr"
+      ]
+    },
     "dplyr": {
       "Package": "dplyr",
       "Version": "1.1.3",
@@ -176,6 +212,16 @@
         "tibble",
         "tidyselect",
         "vctrs"
+      ]
+    },
+    "duckdb": {
+      "Package": "duckdb",
+      "Version": "0.8.1-3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "f0f8da2fb99f785c043f182245aeeb9a",
+      "Requirements": [
+        "DBI"
       ]
     },
     "e1071": {
@@ -223,10 +269,15 @@
     },
     "ggpattern": {
       "Package": "ggpattern",
-      "Version": "1.0.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "1c5980570b0e1d8cd9c08bdd1472d236",
+      "Version": "1.1.0-0",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "coolbutuseless",
+      "RemoteRepo": "ggpattern",
+      "RemoteRef": "master",
+      "RemoteSha": "bc9e4cd1271674a537bf3406663765648e3963bd",
+      "Hash": "18e4da84c70070cf06ce18f8ae760dd8",
       "Requirements": [
         "ggplot2",
         "glue",

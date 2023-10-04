@@ -1,17 +1,5 @@
-library(DBI)
-library(dplyr)
-library(purrr)
-library(stringr)
-library(tidyr)
-
-
 #' Load Run Sets from DB
 #'
-#' @param conn the database connection
-#' @param ... the set IDs to load
-#'
-#' @return the latency data asl wellas parameters for the different stages of a run
-#' @export
 #'
 #' This is the main function for fetching latency data from the database. It uses
 #' the benchmark set ids to identify relevant runs. If benchmarks are performed in
@@ -28,15 +16,29 @@ library(tidyr)
 #' Each row of the returned dataframe also contains the parameters of each run.
 #'
 #'
+#' @param conn the database connection
+#' @param ... the set IDs to load
+#'
+#' @return the latency data asl wellas parameters for the different stages of a run
+#' @import dplyr
+#' @import dbplyr
+#' @import tidyr
+#' @importFrom purrr map_dfr map_lgl
+#' @importFrom stringr regex str_detect str_remove str_replace
 #'
 #' @examples
 #' conn <- dbConnect(duckdb::duckdb(), dbdir="results.db")
 #' prepare_timings_data_comparison(conn, 23)
 #' prepare_timings_data_comparison(conn, 17, 18, 19)
+#' @export
 prepare_timings_data_comparison <- function(conn, ...) {
   set_ids <- list(...)
 
+  # for each provided set id
+
   prepare_run <- function(set_id) {
+    # get data from db and load all relevant markers
+
     run <- tbl(conn, "benchmark_run") %>%
       filter(benchmark_set == set_id) %>%
       inner_join(tbl(conn, "timings"), by = c("id" = "run_id")) %>%
@@ -45,6 +47,8 @@ prepare_timings_data_comparison <- function(conn, ...) {
       rename(run_id = id) %>%
       collect()
 
+    # create timestamps where no host timestamp exists by calculating and applying
+    # the offset
     if (nrow(run %>% filter(event == "now")) > 0) {
       offset <- run %>%
         filter(event == "now") %>%
@@ -57,30 +61,21 @@ prepare_timings_data_comparison <- function(conn, ...) {
 
     }
 
-    has_mid <- "mid" %in% run$event
-    has_pre <- "pre" %in% run$event
-
+    # convert timestamps to wide form in order to create latency info later
     run <- run %>%
       dplyr::select(-controller_time)  %>%
       pivot_wider(names_from = event, values_from = timestamp)
 
-    if (has_mid) {
-      run <- run %>%
-        unnest_longer(c(start, mid, end))
-    } else if (has_pre) {
-      run <- run %>%
-        unnest_longer(c(pre, start, end))
-    } else if (has_pre && has_mid) {
-      run <- run %>%
-        unnest_longer(c(pre, start, mid, end))
-    } else {
-      run <- run %>%
-        unnest_longer(c(start, end))
-    }
 
+    # because sometimespivot_wider created multiple values, expand them
+    run <- run %>%
+      unnest_longer(c(pre, start, mid, end, terminated), keep_empty = T)
+
+    # calculate latency
     run <- run %>%
       mutate(duration = end - start)
 
+    # calculate special additional latencies for the splitted ingestion stage
     run_ingest <- run %>% filter(stage == "ingestion")
 
     run <- run %>%
@@ -91,24 +86,23 @@ prepare_timings_data_comparison <- function(conn, ...) {
                          ingest_dur_type = "system")) %>%
       dplyr::select(-any_of(c("pre", "start", "mid", "end")))
 
-    if (has_pre) {
-      run_ingest <- run_ingest %>%
-        filter(!map_lgl(pre, is.null)) %>%
-        unnest_longer(pre)
+    run_ingest <- run_ingest %>%
+      filter(!map_lgl(pre, is.null)) %>%
+      unnest_longer(pre)
 
-      run_full <- run_ingest %>% mutate(duration = end - pre,
-                                        ingest_dur_type = "full") %>%
-        dplyr::select(-any_of(c("pre", "start", "mid", "end")))
+    run_full <- run_ingest %>% mutate(duration = end - pre,
+                                      ingest_dur_type = "full") %>%
+      dplyr::select(-any_of(c("pre", "start", "mid", "end")))
 
-      run_pre <- run_ingest %>% mutate(duration = start - pre,
-                                       ingest_dur_type = "pre") %>%
-        dplyr::select(-any_of(c("pre", "start", "mid", "end")))
+    run_pre <- run_ingest %>% mutate(duration = start - pre,
+                                     ingest_dur_type = "pre") %>%
+      dplyr::select(-any_of(c("pre", "start", "mid", "end")))
 
-      run <- run %>%
-        bind_rows(run_full) %>%
-        bind_rows(run_pre)
+    run <- run %>%
+      bind_rows(run_full) %>%
+      bind_rows(run_pre)
 
-    }
+
 
     run <- run %>%
       dplyr::select(run_id,
@@ -120,6 +114,7 @@ prepare_timings_data_comparison <- function(conn, ...) {
                     duration,
                     ingest_dur_type)
 
+    # handle warm starts
     run <- run %>%
       filter(str_detect(stage, "execution")) %>%
       mutate(
@@ -129,6 +124,7 @@ prepare_timings_data_comparison <- function(conn, ...) {
       ) %>%
       bind_rows(run %>% filter(str_detect(stage, "execution", negate = T)))
 
+    # aggregate markers from preprocess into single value for the complete stage
     run <- run %>%
       filter(stage == "preprocess" & dataset != "") %>%
       group_by(run_id, parameters, system, dataset) %>%
@@ -138,6 +134,8 @@ prepare_timings_data_comparison <- function(conn, ...) {
       bind_rows(run %>% filter(stage != "preprocess"))
 
 
+    # remove some rows which may contain latency values not relevant to the performance
+    # of the systems
     run <- run %>%
       filter(if_else(system == "sedona", stage != "ingestion", T)) %>%
       filter(if_else(system == "beast", stage != "ingestion", T)) %>%
@@ -147,6 +145,7 @@ prepare_timings_data_comparison <- function(conn, ...) {
                        stage == "execution", comment == "outer", T)) %>%
       mutate(comment = "")
 
+    # average latency values for all warm starts
     run <- run %>%
       filter(stage == "execution") %>%
       group_by(run_id,
@@ -160,9 +159,11 @@ prepare_timings_data_comparison <- function(conn, ...) {
       mutate(stage = "execution", comment = "") %>%
       bind_rows(run %>% filter(stage != "execution"))
 
+    # remove the system anme, because it is readded by joining the parameters next
     run <- run %>%
       dplyr::select(-system)
 
+    # add parameters table and clean up values
     run <- run %>%
       inner_join(tbl(conn, "parameters"),
                  by = c("parameters" = "id"),
@@ -176,6 +177,7 @@ prepare_timings_data_comparison <- function(conn, ...) {
         )
       ))
 
+    # add recipe name
     recipe_name <- tbl(conn, "benchmark_set") %>%
       filter(id == set_id) %>%
       pull(experiment)
@@ -185,6 +187,7 @@ prepare_timings_data_comparison <- function(conn, ...) {
              benchmark_set = set_id)
 
 
+    # add results information
     run <- run %>%
       filter(stage == "execution") %>%
       inner_join(

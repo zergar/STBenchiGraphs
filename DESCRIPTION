@@ -7,20 +7,25 @@ Authors@R:
            comment = c(ORCID = "0009-0008-9363-3072"))
 Description: The ST_Benchi framework produces a results database. You can take this
     database and pass it to this package to explore the results and  create quick visualizations. 
-License: `use_mpl_license()`
+License: LGPL (>= 3)
 Imports:
+    DBI,
+    dbplyr,
     dplyr,
-    readr,
-    stringr,
-    tidyr,
+    duckdb (<= 0.8.9),
     ggplot2,
     lubridate,
-    rlang,
-    DBI,
     purrr,
-    ggpattern,
-    stringi,
+    readr,
+    rlang,
     scales,
-    tools
+    stringi,
+    stringr,
+    tidyr,
+    tools,
+    ggpattern (>= 1.1.0.0)
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 7.2.3
+Remotes:  
+    coolbutuseless/ggpattern

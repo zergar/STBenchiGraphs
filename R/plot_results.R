@@ -1,9 +1,17 @@
-library(dplyr)
-library(ggplot2)
-
-source("R/helper.R")
-
 #' Plot Result Size Comparison
+#'
+#'
+#' This is one of the results analysis functions for ST_Benchi. It takes a dataframe prepared by the
+#' prepare_timings_data_comparison() function and can plot a wide variety of comparisons
+#' depending on the set of parameters supplied. Different to the `plot_stage_comparison()` and
+#' `plot_full_run()`functions, its results are beased on the length of the returned results (their line count)
+#' and not the latency of the systems.
+#'
+#' The function can group and facet the graph by different parameters.
+#'
+#' If a run fails to complete (e.g. due to a timeout or error), the function will draw
+#' an "🗙" slightly above the X axis.
+#'
 #'
 #' @param df the dataframe prepared by the prepare_timings_data_comparison() function
 #' @param unique_params the set of unique parameters that shall be displayed on the x axis
@@ -14,9 +22,20 @@ source("R/helper.R")
 #' @param fill_by_palette the color palette the bars shall be filled with, defaults to the ggplot2 standard palette
 #'
 #' @return a ggplot2 plot
-#' @export
+#' @import ggplot2
+#' @import dplyr
 #'
 #' @examples
+#' plot_result_size(
+#'   df,
+#'   unique_params = c("system", "band"),
+#'   recipe_order = some_recipe_order,
+#'   facet_by = "recipe",
+#'   fill_by = "system",
+#'   fill_by_palette = systems_colors,
+#'   NA_x_height=30
+#' )
+#' @export
 plot_result_size <-
   function(df,
            unique_params,

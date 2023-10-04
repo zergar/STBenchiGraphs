@@ -1,8 +1,9 @@
-library(dplyr)
-library(ggplot2)
-library(stringr)
-
 #' Get Latency of Benchmark Sets as Table
+#'
+#'
+#' This function takes a dataframe prepared by the prepare_timings_data_comparison() function
+#' and returns the latency information formatted as a table.
+#'
 #'
 #' @param df the dataframe prepared by the prepare_timings_data_comparison() function
 #' @param unique_params the set of unique parameters that shall be returned as columns
@@ -10,16 +11,15 @@ library(stringr)
 #' @param group_results whether to aggregate the results by the unique params, defaults to `TRUE`
 #'
 #' @return a table of the latency values
-#' @export
-#'
-#' This function takes a dataframe prepared by the prepare_timings_data_comparison() function
-#' and returns the latency information formatted as a table.
+#' @import dplyr
+#' @importFrom stringr str_detect
 #'
 #' @examples
 #' get_set_timings(
 #'   df,
 #'   unique_params = c("system", "recipe", "vectorize_type")
 #' )
+#' @export
 get_set_timings <-
   function(df,
            unique_params,
