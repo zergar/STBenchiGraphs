@@ -23,6 +23,7 @@
 #' @import dplyr
 #' @import dbplyr
 #' @import tidyr
+#' @importFrom tibble add_column
 #' @importFrom purrr map_dfr map_lgl
 #' @importFrom stringr regex str_detect str_remove str_replace
 #'
@@ -67,7 +68,14 @@ prepare_timings_data_comparison <- function(conn, ...) {
       pivot_wider(names_from = event, values_from = timestamp)
 
 
-    # because sometimespivot_wider created multiple values, expand them
+    # add eventually missing cols for unnest_longer
+    cols <- c(pre = NA_real_, mid = NA_real_, terminated = NA_real_)
+
+    run <- run %>%
+      add_column(!!!cols[setdiff(names(cols), names(run))])
+
+
+    # because sometimes pivot_wider created multiple values, expand them
     run <- run %>%
       unnest_longer(c(pre, start, mid, end, terminated), keep_empty = T)
 

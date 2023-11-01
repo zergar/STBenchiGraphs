@@ -1,7 +1,7 @@
 Package: STBenchiGraphs
 Type: Package
 Title: An analysis library for ST_Benchi 
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: 
     person("Gereon", "Dusella", , "science@gereondusella.de", role = c("aut", "cre"),
            comment = c(ORCID = "0009-0008-9363-3072"))
@@ -21,6 +21,7 @@ Imports:
     scales,
     stringi,
     stringr,
+    tibble,
     tidyr,
     tools,
     ggpattern (>= 1.1.0.0)
