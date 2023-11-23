@@ -1,7 +1,7 @@
 Package: STBenchiGraphs
 Type: Package
 Title: An analysis library for ST_Benchi 
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: 
     person("Gereon", "Dusella", , "science@gereondusella.de", role = c("aut", "cre"),
            comment = c(ORCID = "0009-0008-9363-3072"))
@@ -12,7 +12,7 @@ Imports:
     DBI,
     dbplyr,
     dplyr,
-    duckdb (<= 0.8.9),
+    duckdb,
     ggplot2,
     lubridate,
     purrr,

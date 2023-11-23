@@ -23,15 +23,14 @@
 #' @import dplyr
 #' @import dbplyr
 #' @import tidyr
-#' @importFrom tibble add_column
+#' @importFrom tibble "add_column"
 #' @importFrom purrr map_dfr map_lgl
 #' @importFrom stringr regex str_detect str_remove str_replace
-#'
+#' @export
 #' @examples
 #' conn <- dbConnect(duckdb::duckdb(), dbdir="results.db")
 #' prepare_timings_data_comparison(conn, 23)
 #' prepare_timings_data_comparison(conn, 17, 18, 19)
-#' @export
 prepare_timings_data_comparison <- function(conn, ...) {
   set_ids <- list(...)
 
@@ -100,11 +99,13 @@ prepare_timings_data_comparison <- function(conn, ...) {
 
     run_full <- run_ingest %>% mutate(duration = end - pre,
                                       ingest_dur_type = "full") %>%
-      dplyr::select(-any_of(c("pre", "start", "mid", "end")))
+      dplyr::select(-any_of(c("pre", "start", "mid", "end"))) %>%
+      drop_na(duration)
 
     run_pre <- run_ingest %>% mutate(duration = start - pre,
                                      ingest_dur_type = "pre") %>%
-      dplyr::select(-any_of(c("pre", "start", "mid", "end")))
+      dplyr::select(-any_of(c("pre", "start", "mid", "end"))) %>%
+      drop_na(duration)
 
     run <- run %>%
       bind_rows(run_full) %>%

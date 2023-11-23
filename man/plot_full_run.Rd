@@ -7,7 +7,7 @@
 plot_full_run(
   df,
   unique_params,
-  facet_by = "",
+  facet_by = "recipe",
   fill_by = "system",
   drop_stages = c(),
   postgis_sel_ingest_dur_type = "full",
