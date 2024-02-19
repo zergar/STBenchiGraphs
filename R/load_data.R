@@ -147,8 +147,11 @@ prepare_timings_data_comparison <- function(conn, ...) {
     # of the systems
     run <- run %>%
       filter(if_else(system == "sedona", stage != "ingestion", T)) %>%
+      filter(if_else(system == "sedona-vec", stage != "ingestion", T)) %>%
       filter(if_else(system == "beast", stage != "ingestion", T)) %>%
       filter(if_else(system == "sedona" &
+                       stage == "execution", comment == "outer", T)) %>%
+      filter(if_else(system == "sedona-vec" &
                        stage == "execution", comment == "outer", T)) %>%
       filter(if_else(system == "beast" &
                        stage == "execution", comment == "outer", T)) %>%
