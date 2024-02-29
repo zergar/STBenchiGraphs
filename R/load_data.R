@@ -107,9 +107,15 @@ prepare_timings_data_comparison <- function(conn, ...) {
       dplyr::select(-any_of(c("pre", "start", "mid", "end"))) %>%
       drop_na(duration)
 
-    run <- run %>%
-      bind_rows(run_full) %>%
-      bind_rows(run_pre)
+    if (nrow(run_pre) > 0) {
+      run <- run %>%
+        bind_rows(run_pre)
+    }
+
+    if (nrow(run_full) > 0) {
+      run <- run %>%
+        bind_rows(run_full)
+    }
 
 
 
