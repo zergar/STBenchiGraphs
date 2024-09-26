@@ -22,10 +22,13 @@
 #' @return the latency data asl wellas parameters for the different stages of a run
 #' @import dplyr
 #' @import dbplyr
+#' @import DBI
 #' @import tidyr
+#' @import tidyverse
 #' @importFrom tibble "add_column"
 #' @importFrom purrr map_dfr map_lgl
 #' @importFrom stringr regex str_detect str_remove str_replace
+#' @ImportFrom jsonlite fromJSON
 #' @export
 #' @examples
 #' conn <- dbConnect(duckdb::duckdb(), dbdir="results.db")
@@ -199,6 +202,26 @@ prepare_timings_data_comparison <- function(conn, ...) {
     recipe_name <- tbl(conn, "benchmark_set") %>%
       filter(id == set_id) %>%
       pull(experiment)
+
+    if ("resource_limits" %in% colnames(tbl(conn, "benchmark_set"))) {
+      # add resource limits
+      resource_limit_id <- tbl(conn, "benchmark_set") %>%
+        filter(id == set_id) %>%
+        pull(resource_limits)
+
+      run <- run |>
+        mutate(resource_limits = resource_limit_id) |>
+        inner_join(
+          tbl(conn, "resource_limit"),
+          by = c("resource_limits" = "id"),
+          copy = T
+        ) |>
+        rowwise() |>
+        mutate(
+          limits = list(jsonlite::fromJSON(limits)),
+        ) |>
+        unnest_wider(limits)
+    }
 
     run <- run %>%
       mutate(recipe = str_remove(recipe_name, regex("(.compose){0,1}.ya{0,1}ml")),

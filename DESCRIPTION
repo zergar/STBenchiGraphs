@@ -24,6 +24,7 @@ Imports:
     tibble,
     tidyr,
     tools,
+    jsonlite,
     ggpattern (>= 1.1.0.0)
 Encoding: UTF-8
 LazyData: true
