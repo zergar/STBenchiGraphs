@@ -35,7 +35,7 @@
 #' prepare_timings_data_comparison(conn, 23)
 #' prepare_timings_data_comparison(conn, 17, 18, 19)
 prepare_timings_data_comparison <- function(conn, ...) {
-  set_ids <- list(...)
+  set_ids <- unlist(list(...))
 
   # for each provided set id
 
